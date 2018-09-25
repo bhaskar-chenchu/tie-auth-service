@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.core.Authentication;
@@ -43,7 +44,10 @@ public class SomeController {
                 .build();
     }
  */
-    @PreAuthorize("hasAuthority('add-workshop')")
+
+
+
+    @PreAuthorize("hasAuthority('add-workshop') OR hasAuthority('${security.configurable.authority}')")
     @RequestMapping(path = "/workshops/", method = RequestMethod.POST)
     public String addWorkShop(){
         return "workshop added";

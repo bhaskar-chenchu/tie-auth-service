@@ -66,7 +66,10 @@ import static org.junit.Assert.fail;
  * do not like this test-setup because of its inflexibility and weight, the gain is that the
  * communication with a real authorization server is carried out. Since we are using spring security
  * on both sides testing their code is not really sensible.
+ *  * @ignore this class is likely not going to be run as part of the tests for this component, rather it exists
+ *  * as an example.
  */
+@Ignore
 @ActiveProfiles("dev")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

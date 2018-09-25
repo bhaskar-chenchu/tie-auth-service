@@ -1,5 +1,6 @@
 package com.vcc.tie.sample.test.component;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;
@@ -14,7 +15,10 @@ import static org.junit.Assert.fail;
  * validation, depending on how the RemoteTokenServices is configured.
  */
 public class SomeControllerCompTest {
-
+  /** ignored until team decides this is a bad / good strategy
+   *
+   */
+  @Ignore
   @Test
   public void dsa() {
     fail("not impl");

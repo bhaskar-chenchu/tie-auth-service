@@ -5,6 +5,7 @@ import com.vcc.tie.sample.util.JwtTokenClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -39,107 +40,113 @@ import java.util.Optional;
 @ActiveProfiles("no-signature-verification")
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties =
-        "spring.config.location=classpath:/application-test.yaml") // the autoconfigure for spring
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "spring.config.location=classpath:/application-test.yaml"}
+) // the autoconfigure for spring
 // security is not very flexible,
 // and will in particular trigger
 // on the
 // security.oauth2.resource.jwt.keyUri property
 public class SomeControllerRestSliceTest {
 
-  @LocalServerPort private int port;
+    @LocalServerPort
+    private int port;
 
-  @Autowired private FakeJWTTokenClient fakeJWTTokenClient;
+    @Autowired
+    private FakeJWTTokenClient fakeJWTTokenClient;
 
-  @Autowired private RestTemplateBuilder restTemplate;
-  /**
-   * This is just confirming that the application is configured correctly, if it is I should be
-   * getting a 401 since there is no authentication provided.
-   */
-  @Test(expected = HttpClientErrorException.class)
-  public void access_protected_resource_without_token() {
+    @Autowired
+    private RestTemplateBuilder restTemplate;
 
-    restTemplate
-        .build()
-        .getForEntity(
-            UriComponentsBuilder.fromUriString("http://localhost")
-                .port(port)
-                .path("/secured")
-                .path("/workshops")
-                .path( "tech-work")
+    /**
+     * This is just confirming that the application is configured correctly, if it is I should be
+     * getting a 401 since there is no authentication provided.
+     */
+    @Test(expected = HttpClientErrorException.class)
+    public void access_protected_resource_without_token() {
+
+        restTemplate
                 .build()
-                .toUri(),
-            String.class);
-  }
+                .getForEntity(
+                        UriComponentsBuilder.fromUriString("http://localhost")
+                                .port(port)
+                                .path("/secured")
+                                .path("/workshops")
+                                .path("tech-work")
+                                .build()
+                                .toUri(),
+                        String.class);
+    }
 
-  @Test
-  public void access_protected_resource_with_token_as_technician() {
+    @Test
+    public void access_protected_resource_with_token_as_technician() {
 
-    JwtTokenClient.JwtTokenResponse tokenResponse =
-        createFakeTokenWithAuthorities("ROLE_TECHNICIAN");
+        JwtTokenClient.JwtTokenResponse tokenResponse =
+                createFakeTokenWithAuthorities("ROLE_TECHNICIAN");
 
-    RequestEntity tokenRequest =
-        RequestEntity.get(
-                UriComponentsBuilder.fromUriString("http://localhost")
-                    .port(port)
-                    .path("/secured")
-                    .path("/workshops")
-                    .path("/tech-work/")
-                    .build()
-                    .toUri())
-            .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
-            .build();
-    restTemplate.build().exchange(tokenRequest, String.class).getBody();
-  }
+        RequestEntity tokenRequest =
+                RequestEntity.get(
+                        UriComponentsBuilder.fromUriString("http://localhost")
+                                .port(port)
+                                .path("/secured")
+                                .path("/workshops")
+                                .path("/tech-work/")
+                                .build()
+                                .toUri())
+                        .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
+                        .build();
+        restTemplate.build().exchange(tokenRequest, String.class).getBody();
+    }
 
-  @Test
-  public void access_protected_resource_with_token_as_market_user() {
+    @Test
+    public void access_protected_resource_with_token_as_market_user() {
 
-    JwtTokenClient.JwtTokenResponse tokenResponse = createFakeTokenWithAuthorities("add-workshop");
-    RequestEntity tokenRequest =
-        RequestEntity.post(
-                UriComponentsBuilder.fromUriString("http://localhost")
-                    .port(port)
-                    .path("/secured")
-                    .path("/workshops/")
-                    .build()
-                    .toUri())
-            .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
-            .build();
-    restTemplate.build().exchange(tokenRequest, String.class).getBody();
-  }
+        JwtTokenClient.JwtTokenResponse tokenResponse = createFakeTokenWithAuthorities("add-workshop");
+        RequestEntity tokenRequest =
+                RequestEntity.post(
+                        UriComponentsBuilder.fromUriString("http://localhost")
+                                .port(port)
+                                .path("/secured")
+                                .path("/workshops/")
+                                .build()
+                                .toUri())
+                        .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
+                        .build();
+        restTemplate.build().exchange(tokenRequest, String.class).getBody();
+    }
 
-  private JwtTokenClient.JwtTokenResponse createFakeTokenWithAuthorities(String... authorities) {
-    return fakeJWTTokenClient.requestToken(
-        FakeJWTTokenClient.FakeTokenRequest.builder()
-            .authorities(Arrays.asList(authorities))
 
-            .build());
-  }
+    private JwtTokenClient.JwtTokenResponse createFakeTokenWithAuthorities(String... authorities) {
+        return fakeJWTTokenClient.requestToken(
+                FakeJWTTokenClient.FakeTokenRequest.builder()
+                        .authorities(Arrays.asList(authorities))
 
-  @Test
-  public void access_protected_resource_with_token_as_market_user_and_use_the_marketId_claim() {
+                        .build());
+    }
 
-    JwtTokenClient.JwtTokenResponse tokenResponse =
-        createFakeTokenWithAuthorities("remove-workshop");
+    @Test
+    public void access_protected_resource_with_token_as_market_user_and_use_the_marketId_claim() {
 
-    RequestEntity tokenRequest =
-        RequestEntity.delete(
-                UriComponentsBuilder.fromUriString("http://localhost")
-                    .port(port)
-                    .path("/secured")
-                    .path("/workshops/")
-                    .build()
-                    .toUri())
-            .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
-            .build();
-    restTemplate.build().exchange(tokenRequest, String.class).getBody();
-  }
+        JwtTokenClient.JwtTokenResponse tokenResponse =
+                createFakeTokenWithAuthorities("remove-workshop");
 
-  private String createBearerTokenHeader(Optional<OAuth2AccessToken> accessToken) {
-    return accessToken
-        .map(t -> "Bearer " + t.getValue())
-        .orElseThrow(() -> new IllegalStateException("No access token provided"));
-  }
+        RequestEntity tokenRequest =
+                RequestEntity.delete(
+                        UriComponentsBuilder.fromUriString("http://localhost")
+                                .port(port)
+                                .path("/secured")
+                                .path("/workshops/")
+                                .build()
+                                .toUri())
+                        .header("Authorization", createBearerTokenHeader(tokenResponse.getAccessToken()))
+                        .build();
+        restTemplate.build().exchange(tokenRequest, String.class).getBody();
+    }
+
+    private String createBearerTokenHeader(Optional<OAuth2AccessToken> accessToken) {
+        return accessToken
+                .map(t -> "Bearer " + t.getValue())
+                .orElseThrow(() -> new IllegalStateException("No access token provided"));
+    }
 }
