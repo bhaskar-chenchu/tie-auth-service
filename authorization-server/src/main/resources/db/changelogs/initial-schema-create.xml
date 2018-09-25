@@ -1,0 +1,55 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+    <!--
+    Create a client table that is used by the client application, such as a UI
+    Create the User table that is used to store user credentials
+    Create the Roles table that is used to store roles of a user
+
+    Since this is intended for demo-purposes i skipped all the tables needed for tokens when not doing
+    JWT, as well as any priviliage structure that spring could use for its roles (I just added an in-memory service) .
+    -->
+    <changeSet id="1" author="GSANDERS">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="oauth_client_details"/>
+            </not>
+        </preConditions>
+        <createTable tableName="oauth_client_details">
+            <column name="client_id" type="varchar(255)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="resource_ids" type="varchar(255)"/>
+            <column name="client_secret" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scope" type="varchar(255)"/>
+            <column name="authorized_grant_types" type="varchar(255)"/>
+            <column name="web_server_redirect_uri" type="varchar(255)"/>
+            <column name="authorities" type="varchar(255)"/>
+            <column name="access_token_validity" type="INTEGER"/>
+            <column name="refresh_token_validity" type="INTEGER"/>
+            <column name="additional_information" type="varchar(2048)"/>
+            <column name="autoapprove" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="GSANDERS">
+        <createTable tableName="USERS">
+            <column name="USERNAME" type="varchar(255)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="PASSWORD" type="varchar(60)"/>
+            <column name="ENABLED" type="boolean"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="3" author="GSANDERS">
+        <createTable tableName="AUTHORITIES">
+            <column name="USERNAME"  type="varchar(255)"></column>
+            <column name="AUTHORITY" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

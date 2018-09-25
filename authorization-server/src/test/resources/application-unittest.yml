@@ -1,0 +1,39 @@
+management:
+  server:
+    port: 0
+  endpoint:
+    health:
+      show-details: "WHEN_AUTHORIZED"
+    shutdown:
+      enabled: true
+  endpoints:
+          web:
+            exposure:
+              include: shutdown,health,info
+logging:
+ config: classpath:log4j2-dev.xml
+ file: oauth2-service.log
+ level:
+   org.springframework.security: DEBUG
+   org.springframework.jdbc.core.JdbcTemplate: DEBUG
+spring:
+  application:
+    name: authorization
+  liquibase:
+    change-log: classpath:db/liquibase-changelog.xml
+  jpa.hibernate.ddl-auto: none
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;
+    driverClassName: org.h2.Driver
+  #  url: jdbc:postgresql://localhost:5432/dsa
+  #  driverClassName: org.postgresql.Driver
+    username: auth-service
+    password: Pass1234
+server:
+ port: 8080
+ servlet:
+  context-path: /auth
+keystore:
+  password: mySecretKey
+
+

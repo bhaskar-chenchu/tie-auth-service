@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oracle-service
+  labels:
+    app: oracle
+spec:
+  selector:
+    app: oracle
+  ports:
+  - port: 1521
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oracle
+  labels:
+    app: oracle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle
+  template:
+    metadata:
+      labels:
+        app: oracle
+    spec:
+      containers:
+      - name: oracle
+        image: wnameless/oracle-xe-11g:latest
+        command: ["/bin/bash"]
+        args: ["-c", "/bin/sleep 60; export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe; /bin/echo -e \"CREATE USER TIE_MEGA_SCHEMA IDENTIFIED BY Pass1234;\nGRANT CONNECT TO TIE_MEGA_SCHEMA;\nGRANT RESOURCE TO TIE_MEGA_SCHEMA;\nGRANT UNLIMITED TABLESPACE TO TIE_MEGA_SCHEMA;\nGRANT CREATE VIEW TO TIE_MEGA_SCHEMA;\n\exit\n\" | /u01/app/oracle/product/11.2.0/xe/bin/sqlplus system/oracle@xe"]
+        ports:
+        - containerPort: 1521

@@ -1,0 +1,8 @@
+security:
+  oauth2:
+    resource:
+      host: http://localhost:9000/auth/oauth
+      jwt:
+        keyUri: ${security.oauth2.resource.host}/token_key
+logging:
+  config: classpath:log4j2-dev.xml
