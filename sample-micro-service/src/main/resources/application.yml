@@ -6,3 +6,4 @@ security:
         keyUri: ${security.oauth2.resource.host}/token_key
 logging:
   config: classpath:log4j2-dev.xml
+  org.springframework: DEBUG

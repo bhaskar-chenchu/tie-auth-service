@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: authorization
-        image: tie-team/authorization:0-SNAPSHOT
+        image: tie-team/authorization:1.0-SNAPSHOT
         ports:
         - containerPort: 8080
 ---

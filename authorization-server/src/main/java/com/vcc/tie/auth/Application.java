@@ -4,10 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import java.security.Principal;
 
@@ -30,4 +32,18 @@ public class Application {
         logger.debug("user info: "+user.toString());
         return user;
     }
+
+    @Bean
+    public CommonsRequestLoggingFilter logFilter() {
+
+        CommonsRequestLoggingFilter filter
+                = new CommonsRequestLoggingFilter();
+        filter.setIncludeQueryString(true);
+        filter.setIncludePayload(true);
+        filter.setMaxPayloadLength(10000);
+        filter.setIncludeHeaders(true);
+        filter.setAfterMessagePrefix("REQUEST DATA : ");
+        return filter;
+    }
+
 }
