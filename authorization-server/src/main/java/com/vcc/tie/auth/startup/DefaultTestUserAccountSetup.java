@@ -2,6 +2,8 @@ package com.vcc.tie.auth.startup;
 
 
 import com.vcc.tie.auth.claims.TieClaimsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -15,10 +17,10 @@ import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.util.Collections;
 
-@Profile({"unittest", "localhost","docker-localhost"})
 @Service
 public class DefaultTestUserAccountSetup {
 
+    Logger logger = LoggerFactory.getLogger(DefaultTestUserAccountSetup.class);
     private final JdbcUserDetailsManager jdbcUserDetailsManager;
     private final PasswordEncoder passwordEncoder;
     private final TieClaimsProvider tieClaimsProvider;
@@ -50,10 +52,13 @@ public class DefaultTestUserAccountSetup {
     private void store(UserDetails userDetails) {
         try{
             jdbcUserDetailsManager.createUser(userDetails);
+            logger.info("Created account for {} with password {} ", userDetails.getUsername(), userDetails.getPassword());
         }
         catch (DuplicateKeyException e){
             jdbcUserDetailsManager.updateUser(userDetails);
+            logger.info("Updated account for {} with password {}", userDetails.getUsername(), userDetails.getPassword());
         }
+
     }
 
     private UserDetails createTestUser(String username) {

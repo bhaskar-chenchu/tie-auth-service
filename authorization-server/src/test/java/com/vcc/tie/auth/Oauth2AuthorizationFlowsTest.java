@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.nio.charset.Charset;
@@ -51,7 +54,7 @@ public class Oauth2AuthorizationFlowsTest {
     String username = "test_user";
     String password = "Pass1234";
     String clientId = "test_ui_client_id";
-    String clientPassword = password;
+    String clientPassword = "Pass1234";
     RequestEntity tokenRequest =
         RequestEntity.post(
                 UriComponentsBuilder.fromHttpUrl("http://localhost")
@@ -67,12 +70,37 @@ public class Oauth2AuthorizationFlowsTest {
                     .toUri())
             .header("Authorization", createBasicAuthHeader(clientId, clientPassword))
             .build();
-    String b64Jwt = restTemplate.build().exchange(tokenRequest, String.class).getBody();
     BaseClientDetails details = restTemplate.build().exchange(tokenRequest, BaseClientDetails.class).getBody();
     assertNotNull(details.getAdditionalInformation().get("access_token").toString());
     assertNotNull(details.getAdditionalInformation().get("partnerid").toString());
   }
 
+  @Test(expected = HttpClientErrorException.class)
+  public void get_token_with_password_grant_throws_HttpClientErrorException_on_bad_password() {
+
+    String username = "test_user";
+    String password = "incorrect-password";
+    String clientId = "test_ui_client_id";
+    String clientPassword = "Pass1234";
+    RequestEntity tokenRequest =
+            RequestEntity.post(
+                    UriComponentsBuilder.fromHttpUrl("http://localhost")
+                            .port(port)
+                            .path("/auth")
+                            .path("/oauth")
+                            .path("/token")
+                            .queryParam("grant_type", "password")
+                            .queryParam("username", username)
+                            .queryParam("password", password)
+                            .queryParam("client_id", clientId)
+                            .build()
+                            .toUri())
+                    .header("Authorization", createBasicAuthHeader(clientId, clientPassword))
+                    .build();
+    BaseClientDetails details = restTemplate.build().exchange(tokenRequest, BaseClientDetails.class).getBody();
+    assertNotNull(details.getAdditionalInformation().get("access_token").toString());
+    assertNotNull(details.getAdditionalInformation().get("partnerid").toString());
+  }
   /** Ignored - since we will use another teams auth server */
   @Ignore
   @Test

@@ -25,6 +25,8 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.DefaultCorsProcessor;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -41,16 +43,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
     private Environment environment;
 
     @Autowired
-    private  AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private TieClaimsProvider tieClaimsProvider;
-/*
-    @Autowired
-    CorsConfiguration corsConfiguration;*/
+
 
     @Autowired
-    DataSource dataSource;
+    private DataSource dataSource;
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -63,41 +63,25 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
      * password grant is not enabled (even if some clients are allowed it) unless an {@link AuthenticationManager} is
      * supplied to the {@link #configure(AuthorizationServerEndpointsConfigurer)}. At least one client, or a fully
      * formed custom {@link ClientDetailsService} must be declared or the server will not start.
-
      */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
 
         TokenEnhancerChain chain = new TokenEnhancerChain();
-        chain.setTokenEnhancers(Arrays.asList(createTieTokenEnhancer(),jwtAccessTokenConverter()));
+        chain.setTokenEnhancers(Arrays.asList(createTieTokenEnhancer(), jwtAccessTokenConverter()));
         endpoints.tokenStore(tokenStore())
                 .tokenEnhancer(chain)
-                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST)
-
-                .authenticationManager( authenticationManager );
-   //     corsProtectAuthenticationEndpoint(endpoints);
+                .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.OPTIONS)
+                .authenticationManager(authenticationManager);
     }
-
-
-
-
- /*   private void corsProtectAuthenticationEndpoint(AuthorizationServerEndpointsConfigurer endpoints) {
-        Map<String, CorsConfiguration> corsConfigMap = new HashMap<>();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(corsConfiguration.getAllowCredentials());
-        config.setAllowedOrigins(corsConfiguration.getAllowedOrigins());
-        config.setAllowedMethods(corsConfiguration.getAllowedMethods());
-        config.setAllowedHeaders(Collections.singletonList("*"));
-        corsConfigMap.put("/oauth/token", config);
-        endpoints.getFrameworkEndpointHandlerMapping()
-                .setCorsConfigurations(corsConfigMap);
-    }*/
 
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+
         security.tokenKeyAccess("permitAll()")
-        .checkTokenAccess("isAuthenticated()");
+                .checkTokenAccess("isAuthenticated()");
+
     }
 
     @Bean
@@ -111,7 +95,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
         return new TieTokenEnhancer(this.tieClaimsProvider);
     }
 
-    private static class TieTokenEnhancer implements TokenEnhancer{
+    private static class TieTokenEnhancer implements TokenEnhancer {
 
 
         private final TieClaimsProvider tieClaimsProvider;
@@ -122,23 +106,23 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
         @Override
         public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
-            Map<String,Object> additionalInfo = (accessToken.getAdditionalInformation() != null)
-                ? new HashMap<>(accessToken.getAdditionalInformation())
-                : new HashMap<>();
+            Map<String, Object> additionalInfo = (accessToken.getAdditionalInformation() != null)
+                    ? new HashMap<>(accessToken.getAdditionalInformation())
+                    : new HashMap<>();
             additionalInfo.put("partnerid", UUID.randomUUID().toString());
             additionalInfo.put("marketId", UUID.randomUUID().toString());
-            additionalInfo.put("workshop?Id", UUID.randomUUID().toString());
+            additionalInfo.put("workshopId", UUID.randomUUID().toString());
 
             Set<String> authorities = new TreeSet<>();
 
 
             authorities.addAll(tieClaimsProvider.getUserPrivileges(authentication.getUserAuthentication().getName()));
-            tieClaimsProvider.getUserRoles(authentication.getName()).map(s -> "ROLE_"+s)
+            tieClaimsProvider.getUserRoles(authentication.getName()).map(s -> "ROLE_" + s)
                     .ifPresent(authorities::add);
 
             additionalInfo.put("authorities", authorities);
 
-            ((DefaultOAuth2AccessToken)accessToken).setAdditionalInformation(additionalInfo);
+            ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
             return accessToken;
         }
     }

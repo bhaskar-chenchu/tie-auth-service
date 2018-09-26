@@ -31,3 +31,8 @@ server:
     context-path: /auth
 keystore:
   password: mySecretKey
+tie:
+  security:
+    http:
+      cors:
+        domainlist: "https://pie.vcc.net, https://tie.vcc.net, http://localhost, https://localhost"
