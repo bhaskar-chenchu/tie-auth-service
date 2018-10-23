@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: authorization
+  name: authorizationapp
   labels:
-    app: authorization
+    app: authorizationapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: authorization
+      app: authorizationapp
   template:
     metadata:
       labels:
-        app: authorization
+        app: authorizationapp
     spec:
       containers:
-      - name: authorization
-        image: tie-team/authorization:1.0-SNAPSHOT
+      - name: authorizationapp
+        image: tie-team/authorizationapp:1.0-SNAPSHOT
         ports:
         - containerPort: 8080
 ---
@@ -25,9 +25,9 @@ kind: Service
 metadata:
   name: authorization-service
   labels:
-    app: authorization
+    app: authorizationapp
 spec:
   selector:
-    app: authorization
+    app: authorizationapp
   ports:
   - port: 8080

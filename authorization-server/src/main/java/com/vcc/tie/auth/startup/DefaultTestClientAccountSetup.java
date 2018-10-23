@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 
-//@Profile({"unittest", "localhost","docker-localhost"})
+
 @Service
 public class DefaultTestClientAccountSetup {
 

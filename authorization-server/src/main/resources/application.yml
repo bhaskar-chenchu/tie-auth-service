@@ -1,12 +1,11 @@
 spring:
   application:
-    name: authorization
+    name: authorizationapp
   liquibase:
     change-log: classpath:db/liquibase-changelog.xml
   jpa.hibernate.ddl-auto: none
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;
-    driverClassName: org.h2.Driver
     #url: jdbc:oracle:thin:@oracle-service:1521:xe
     #driverClassName: oracle.jdbc.OracleDriver
     #  url: jdbc:postgresql://localhost:5432/test
@@ -14,8 +13,6 @@ spring:
     username: TIE_MEGA_SCHEMA
     password: Pass1234
 management:
-  server:
-    port: 8082
   endpoint:
     health:
       show-details: "WHEN_AUTHORIZED"
@@ -24,7 +21,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: shutdown,health,info
+        include: health
 server:
   port: 8080
   servlet:
@@ -35,4 +32,4 @@ tie:
   security:
     http:
       cors:
-        domainlist: "https://pie.vcc.net, https://tie.vcc.net, http://localhost, https://localhost"
+        domainlist: "*"

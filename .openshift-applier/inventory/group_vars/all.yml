@@ -1,0 +1,27 @@
+openshift_cluster_content:
+- object: app-builds
+  content:
+  - name: authorizationapp-build
+    template: "{{ playbook_dir }}/templates/build.yml"
+    params: "{{ playbook_dir }}/params/build"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - build
+- object: deploy-dev
+  content:
+  - name:  authorizationapp
+    template: "{{ playbook_dir }}/templates/deploy.yml"
+    params: "{{ playbook_dir }}/params/dev"
+    namespace: "{{ dev_namespace }}"
+    tags:
+    - deploy
+    - dev
+- object: deploy-test
+  content:
+  - name:  authorizationapp
+    template: "{{ playbook_dir }}/templates/deploy.yml"
+    params: "{{ playbook_dir }}/params/test"
+    namespace: "{{ test_namespace }}"
+    tags:
+    - deploy
+    - test

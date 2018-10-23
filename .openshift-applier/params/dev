@@ -1,0 +1,7 @@
+PIPELINES_NAMESPACE=labs-ci-cd
+NAME=authorizationapp
+DEPLOYER_USER=jenkins
+APP_TAG=latest
+NAMESPACE=labs-dev
+SPRING_DATASOURCE_USERNAME=authorizationapp
+SPRING_DATASOURCE_PASSWORD="Re4llySecretPasswd!_"
