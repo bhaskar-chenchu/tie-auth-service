@@ -66,4 +66,4 @@ parameters:
   required: true
   value: redhat-openjdk18-openshift:1.4
 labels:
-  template: authorization-build-template
+  template: authorizationapp-build-template
