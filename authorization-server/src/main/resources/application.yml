@@ -14,8 +14,6 @@ spring:
     username: TIE_MEGA_SCHEMA
     password: Pass1234
 management:
-  server:
-    port: 8082
   endpoint:
     health:
       show-details: "WHEN_AUTHORIZED"
@@ -24,7 +22,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: shutdown,health,info
+        include: health
 server:
   port: 8080
   servlet:

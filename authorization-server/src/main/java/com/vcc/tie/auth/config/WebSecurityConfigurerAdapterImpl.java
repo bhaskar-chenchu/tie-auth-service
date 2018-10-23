@@ -44,7 +44,8 @@ public class WebSecurityConfigurerAdapterImpl extends WebSecurityConfigurerAdapt
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    http.csrf().disable().authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/oauth/token").permitAll();
+    http.csrf().disable().authorizeRequests().antMatchers(HttpMethod.OPTIONS, "/oauth/token").permitAll()
+    .and().authorizeRequests().antMatchers(HttpMethod.GET, "/actuator/health").permitAll();
   }
 
 
