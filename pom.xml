@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.5.RELEASE</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.vcc.tie.auth</groupId>
+    <artifactId>authorization-master</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>authorization-server</module>
+        <!--<module>sample-micro-service</module>-->
+    </modules>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>SNAPSHOTS</id>
+            <url>
+                http://${env.NEXUS_CREDS}@${env.NEXUS_SERVICE_HOST}:${env.NEXUS_SERVICE_PORT}/repository/labs-snapshots/
+            </url>
+        </snapshotRepository>
+        <repository>
+            <id>RELEASES</id>
+            <url>
+                http://${env.NEXUS_CREDS}@${env.NEXUS_SERVICE_HOST}:${env.NEXUS_SERVICE_PORT}/repository/labs-releases/
+            </url>
+        </repository>
+    </distributionManagement>
+    <properties>
+        <dockerfile.maven.version>1.4.4</dockerfile.maven.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <sonar.host.url>http://sonarqube:9000</sonar.host.url>
+        <sonar.projectName>authorization</sonar.projectName>
+        <!--   <sonar.host.url>https://sonarqube-labs-ci-cd.apps.vcc.emea-1.rht-labs.com:443/</sonar.host.url>
+       -->    <sonar.login>admin</sonar.login>
+        <sonar.password>admin</sonar.password>
+
+        <liquibase.jdbc.url>jdbc:sqlserver://mssql:1433;databaseName=tiedb</liquibase.jdbc.url>
+        <!--   <liquibase.jdbc.url>jdbc:sqlserver://localhost:1433;databaseName=master</liquibase.jdbc.url>-->
+        <!-- inejcted by jenkinsfile-->
+        <liquibase.username></liquibase.username>
+        <!-- inejcted by jenkinsfile-->
+        <liquibase.password></liquibase.password>
+    </properties>
+
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <failBuildOnAnyVulnerability>false</failBuildOnAnyVulnerability>
+                    <format>xml</format>
+                </configuration>
+                <!--  <executions>
+                      <execution>
+                          <goals>
+                              <goal>check</goal>
+                          </goals>
+                      </execution>
+                  </executions>-->
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>3.5.0.1254</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.2</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+
+
+</project>
