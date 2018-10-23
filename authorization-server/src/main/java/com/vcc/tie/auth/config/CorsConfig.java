@@ -25,7 +25,7 @@ public class CorsConfig {
 
     public CorsConfig(@Value("${tie.security.http.cors.domainlist}") String domainCSVList, @Value("${tie.security.http.cors.credentials:true}") boolean allowCreds){
         allowedOrigins = Arrays.stream(domainCSVList.split(","))
-                .map(s -> s.trim())
+                .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .peek(s -> logger.info("Adding origin {} as acceptable CORS origin", s))
                 .collect(Collectors.toList());
