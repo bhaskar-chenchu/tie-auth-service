@@ -1,0 +1,6 @@
+security:
+  oauth2:
+    resource:
+      host: http://authorization-service:8080/auth/oauth
+      jwt:
+        keyUri: ${security.oauth2.resource.host}/token_key
