@@ -20,11 +20,13 @@ pipeline {
 
         // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "tie"
+        SCHEMA_NAME = "${APP_NAME}".replace("-", "_")
     }
 
     // The options directive is for configuration that applies to the whole job.
     options {
         buildDiscarder(logRotator(numToKeepStr:'10'))
+        disableConcurrentBuilds()
         timeout(time: 15, unit: 'MINUTES')
         ansiColor('xterm')
         timestamps()
@@ -43,6 +45,8 @@ pipeline {
             }
             steps {
                 script {
+
+                    env.MAVEN_VERSION="${BUILD_NUMBER}-RELEASE"
                     // Arbitrary Groovy Script executions can do in script tags
                     env.PROJECT_NAMESPACE = "labs-test"
                     env.NODE_ENV = "test"
@@ -62,10 +66,29 @@ pipeline {
             steps {
                 script {
                     // Arbitrary Groovy Script executions can do in script tags
+                    env.MAVEN_VERSION="${BUILD_NUMBER}-SNAPSHOT"
                     env.PROJECT_NAMESPACE = "labs-dev"
                     env.NODE_ENV = "dev"
                     env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
                 }
+            }
+        }
+
+        stage("prepare maven version for feature branch") {
+            agent {
+                node {
+                    label "master"
+                }
+            }
+            when {
+              not {
+                  expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
+              }
+            }
+            steps {
+                script {
+                    env.MAVEN_VERSION="${BUILD_NUMBER}-${GIT_BRANCH}-SNAPSHOT"
+               }
             }
         }
 
@@ -110,10 +133,10 @@ pipeline {
                 sh 'printenv'
 
                 echo '### setting version ###'
-                sh 'mvn -B versions:set -DnewVersion=${BUILD_NUMBER}-SNAPSHOT'
+                sh 'mvn -B versions:set -DnewVersion=${MAVEN_VERSION}'
 
-                 echo '### Checking binaries for security problems ###'
-                sh "mvn -B dependency-check:check"
+                echo '### SKIPPING Checking binaries for security problems ###'
+                // sh "mvn -B dependency-check:check"
 
                 echo '### compiling  ###'
                 sh "mvn -B clean install  -DskipTests=true"
@@ -125,7 +148,7 @@ pipeline {
                 sh "mvn -B sonar:sonar"
 
                 echo '### Packaging App for Nexus ###'
-                sh 'mvn -B deploy'
+                sh 'mvn -B deploy -DskipTests=true'
             }
             // Post can be used both on individual stages and for the entire build.
             post {
@@ -173,19 +196,13 @@ pipeline {
                                 return true
                             }
                         }
-                        env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
                     }
 
                 }
+
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PIPELINES_NAMESPACE'
                 sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_db.sh" -n $PIPELINES_NAMESPACE'
-
-                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" "Pass1234" -n $PIPELINES_NAMESPACE'
-
-                // run maven liquibase verification
-                sh "mvn -B -f authorization-server/pom.xml liquibase:updateTestingRollback -Dliquibase.username=${LIQUIBASE_TEST_SCHEMA_NAME} -Dliquibase.password=Pass1234"
-                //cleanup schema
-                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/drop_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" -n $PIPELINES_NAMESPACE'
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${SCHEMA_NAME}" "Re4llySecretPasswd!_" -n $PIPELINES_NAMESPACE'
             }
         }
 
@@ -217,19 +234,19 @@ pipeline {
                             }
                         }
                     }
-                    env.DB_NAME = "${JOB_NAME}".replace("-", "_")
+
                 }
 
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PROJECT_NAMESPACE'
                 sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_db.sh" -n $PROJECT_NAMESPACE'
-                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${DB_NAME}" "Re4llySecretPasswd!_" -n $PROJECT_NAMESPACE'
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${SCHEMA_NAME}" "Re4llySecretPasswd!_" -n $PROJECT_NAMESPACE'
             }
         }
 
         stage("app-bake") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -239,7 +256,7 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
 
-                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${BUILD_NUMBER}-SNAPSHOT&maven.extension=jar" -L -o authorization.jar
+                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorization.jar
                 '''
                 echo '### Create Linux Container Image from package ###'
                 sh  '''
