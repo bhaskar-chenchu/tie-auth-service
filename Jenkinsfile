@@ -140,7 +140,7 @@ pipeline {
                 sh "mvn -B clean install  -DskipTests=true"
 
                 echo '### testing ###'
-                //  sh "mvn -B test "
+                sh "mvn -B test "
 
                 echo '### sonaring ###'
                 //sh "mvn -B sonar:sonar"
