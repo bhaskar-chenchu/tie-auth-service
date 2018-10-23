@@ -274,7 +274,7 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
 
-                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=${env.MAVEN_DEPLOY_REPO}&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
+                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=${MAVEN_DEPLOY_REPO}&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
                 '''
                 echo '### Create Linux Container Image from package ###'
                 sh  '''
