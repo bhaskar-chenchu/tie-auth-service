@@ -1,5 +1,5 @@
 PIPELINES_NAMESPACE=labs-ci-cd
-NAME=authorization
+NAME=authorizationapp
 DEPLOYER_USER=jenkins
 APP_TAG=latest
 NAMESPACE=labs-dev

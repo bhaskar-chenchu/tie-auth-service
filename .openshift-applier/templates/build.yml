@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: authorization-build
+  name: authorizationapp-build
   annotations:
     openshift.io/display-name: S2I App Build Template
     description: S2I binary build config to create an image with your app baked in.
