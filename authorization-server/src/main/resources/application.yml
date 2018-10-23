@@ -33,4 +33,4 @@ tie:
   security:
     http:
       cors:
-        domainlist: "https://pie.vcc.net, https://tie.vcc.net, http://localhost, https://localhost"
+        domainlist: "*"
