@@ -190,10 +190,15 @@ pipeline {
                         openshift.withProject(env.PIPELINES_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            podSelector.untilEach {
-                                echo "pod: ${it.name().substring(4)}"
-                                env.MSSQL_POD_NAME = it.name().substring(4)
-                                return true
+                            if(podSelectory.exists){
+                                podSelector.untilEach {
+                                    echo "pod: ${it.name().substring(4)}"
+                                    env.MSSQL_POD_NAME = it.name().substring(4)
+                                    return true
+                                }
+                            }
+                            else{
+                              error("failed to find an mssql instance in namespace ${env.PIPELINES_NAMESPACE}")
                             }
                         }
                         env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
@@ -229,14 +234,22 @@ pipeline {
                 echo '### testing access to DB ###'
 
                 script {
+
+
+
                     openshift.withCluster() {
                         openshift.withProject(env.PROJECT_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            podSelector.untilEach {
-                                echo "pod: ${it.name().substring(4)}"
-                                env.MSSQL_POD_NAME = it.name().substring(4)
-                                return true
+                            if(podSelectory.exists){
+                                podSelector.untilEach {
+                                    echo "pod: ${it.name().substring(4)}"
+                                    env.MSSQL_POD_NAME = it.name().substring(4)
+                                    return true
+                                }
+                            }
+                            else{
+                              error("failed to find an mssql instance in namespace ${env.PIPELINES_NAMESPACE}")
                             }
                         }
                     }
