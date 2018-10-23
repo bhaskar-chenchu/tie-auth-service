@@ -8,7 +8,7 @@ pipeline {
     environment {
         // GLobal Vars
         PIPELINES_NAMESPACE = "labs-ci-cd"
-        APP_NAME = "authorization"
+        APP_NAME = "authorizationapp"
 
 
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
