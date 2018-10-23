@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: authorization-deploy
+  name: authorizationapp-deploy
   annotations:
     openshift.io/display-name: Static react js App Deploy Template
     description: A template to deploy your an App with a HTTP endpoint
@@ -53,7 +53,7 @@ objects:
           terminationMessagePath: "/dev/termination-log"
           readinessProbe:
             httpGet:
-              path: api/actuator/health
+              path: /auth/actuator/health
               port: 8080
             initialDelaySeconds: 10
             timeoutSeconds: 120
@@ -127,4 +127,4 @@ parameters:
   description: Environment specific password for MSSQL.
   required: true
 labels:
-  template: authorization-deploy-template
+  template: authorizationapp-deploy-template

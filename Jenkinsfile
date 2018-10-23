@@ -8,9 +8,7 @@ pipeline {
     environment {
         // GLobal Vars
         PIPELINES_NAMESPACE = "labs-ci-cd"
-        APP_NAME = "authorization"
-
-
+        APP_NAME = "authorizationapp"
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
         JENKINS_TAG = "${JOB_NAME}.${BUILD_NUMBER}"
 
@@ -145,7 +143,7 @@ pipeline {
                 sh "mvn -B test "
 
                 echo '### sonaring ###'
-                sh "mvn -B sonar:sonar"
+                //sh "mvn -B sonar:sonar"
 
                 echo '### Packaging App for Nexus ###'
                 sh 'mvn -B deploy -DskipTests=true'
@@ -190,19 +188,29 @@ pipeline {
                         openshift.withProject(env.PIPELINES_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            podSelector.untilEach {
-                                echo "pod: ${it.name().substring(4)}"
-                                env.MSSQL_POD_NAME = it.name().substring(4)
-                                return true
+                            if(podSelector.exists()){
+                                podSelector.untilEach {
+                                    echo "pod: ${it.name().substring(4)}"
+                                    env.MSSQL_POD_NAME = it.name().substring(4)
+                                    return true
+                                }
+                            }
+                            else{
+                              error("failed to find an mssql instance in namespace ${env.PIPELINES_NAMESPACE}")
                             }
                         }
+                        env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
                     }
-
                 }
-
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PIPELINES_NAMESPACE'
                 sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_db.sh" -n $PIPELINES_NAMESPACE'
-                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${SCHEMA_NAME}" "Re4llySecretPasswd!_" -n $PIPELINES_NAMESPACE'
+
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" "Pass1234" -n $PIPELINES_NAMESPACE'
+
+                // run maven liquibase verification
+                sh "mvn -B -f authorization-server/pom.xml liquibase:updateTestingRollback -Dliquibase.username=${LIQUIBASE_TEST_SCHEMA_NAME} -Dliquibase.password=Pass1234"
+                //cleanup schema
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/drop_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" -n $PIPELINES_NAMESPACE'
             }
         }
 
@@ -223,18 +231,25 @@ pipeline {
                 echo '### testing access to DB ###'
 
                 script {
+
+
+
                     openshift.withCluster() {
                         openshift.withProject(env.PROJECT_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            podSelector.untilEach {
-                                echo "pod: ${it.name().substring(4)}"
-                                env.MSSQL_POD_NAME = it.name().substring(4)
-                                return true
+                            if(podSelector.exists()){
+                                podSelector.untilEach {
+                                    echo "pod: ${it.name().substring(4)}"
+                                    env.MSSQL_POD_NAME = it.name().substring(4)
+                                    return true
+                                }
+                            }
+                            else{
+                              error("failed to find an mssql instance in namespace ${env.PIPELINES_NAMESPACE}")
                             }
                         }
                     }
-
                 }
 
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PROJECT_NAMESPACE'
@@ -256,13 +271,13 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
 
-                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorization.jar
+                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
                 '''
                 echo '### Create Linux Container Image from package ###'
                 sh  '''
                         oc project ${PIPELINES_NAMESPACE} # probs not needed
                         oc patch bc ${APP_NAME} -p "{\\"spec\\":{\\"output\\":{\\"to\\":{\\"kind\\":\\"ImageStreamTag\\",\\"name\\":\\"${APP_NAME}:${JENKINS_TAG}\\"}}}}"
-                        oc start-build ${APP_NAME} --from-file=authorization.jar --follow
+                        oc start-build ${APP_NAME} --from-file=authorizationapp.jar --follow
                     '''
             }
             post {
