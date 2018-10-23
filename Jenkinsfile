@@ -196,13 +196,19 @@ pipeline {
                                 return true
                             }
                         }
+                        env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
                     }
 
                 }
-
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PIPELINES_NAMESPACE'
                 sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_db.sh" -n $PIPELINES_NAMESPACE'
-                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${SCHEMA_NAME}" "Re4llySecretPasswd!_" -n $PIPELINES_NAMESPACE'
+
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" "Pass1234" -n $PIPELINES_NAMESPACE'
+
+                // run maven liquibase verification
+                sh "mvn -B -f authorization-server/pom.xml liquibase:updateTestingRollback -Dliquibase.username=${LIQUIBASE_TEST_SCHEMA_NAME} -Dliquibase.password=Pass1234"
+                //cleanup schema
+                sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/drop_schema.sh" "${LIQUIBASE_TEST_SCHEMA_NAME}" -n $PIPELINES_NAMESPACE'
             }
         }
 
@@ -256,13 +262,13 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
 
-                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorization.jar
+                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
                 '''
                 echo '### Create Linux Container Image from package ###'
                 sh  '''
                         oc project ${PIPELINES_NAMESPACE} # probs not needed
                         oc patch bc ${APP_NAME} -p "{\\"spec\\":{\\"output\\":{\\"to\\":{\\"kind\\":\\"ImageStreamTag\\",\\"name\\":\\"${APP_NAME}:${JENKINS_TAG}\\"}}}}"
-                        oc start-build ${APP_NAME} --from-file=authorization.jar --follow
+                        oc start-build ${APP_NAME} --from-file=authorizationapp.jar --follow
                     '''
             }
             post {
