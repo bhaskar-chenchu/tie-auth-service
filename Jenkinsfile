@@ -190,7 +190,7 @@ pipeline {
                         openshift.withProject(env.PIPELINES_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            if(podSelectory.exists){
+                            if(podSelector.exists){
                                 podSelector.untilEach {
                                     echo "pod: ${it.name().substring(4)}"
                                     env.MSSQL_POD_NAME = it.name().substring(4)
@@ -203,7 +203,6 @@ pipeline {
                         }
                         env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
                     }
-
                 }
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PIPELINES_NAMESPACE'
                 sh 'oc exec $MSSQL_POD_NAME "/usr/local/bin/create_db.sh" -n $PIPELINES_NAMESPACE'
@@ -241,7 +240,7 @@ pipeline {
                         openshift.withProject(env.PROJECT_NAMESPACE ) {
                             def dcObj = openshift.selector("dc", "mssql").object()
                             def podSelector = openshift.selector("pod", [deployment: "mssql-${dcObj.status.latestVersion}"])
-                            if(podSelectory.exists){
+                            if(podSelector.exists){
                                 podSelector.untilEach {
                                     echo "pod: ${it.name().substring(4)}"
                                     env.MSSQL_POD_NAME = it.name().substring(4)
@@ -253,7 +252,6 @@ pipeline {
                             }
                         }
                     }
-
                 }
 
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PROJECT_NAMESPACE'
