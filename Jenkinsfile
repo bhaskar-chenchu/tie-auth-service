@@ -45,6 +45,7 @@ pipeline {
                 script {
 
                     env.MAVEN_VERSION="${BUILD_NUMBER}-RELEASE"
+                    env.MAVEN_DEPLOY_REPO = "labs-releases"
                     // Arbitrary Groovy Script executions can do in script tags
                     env.PROJECT_NAMESPACE = "labs-test"
                     env.NODE_ENV = "test"
@@ -65,6 +66,7 @@ pipeline {
                 script {
                     // Arbitrary Groovy Script executions can do in script tags
                     env.MAVEN_VERSION="${BUILD_NUMBER}-SNAPSHOT"
+                    env.MAVEN_DEPLOY_REPO = "labs-snapshots"
                     env.PROJECT_NAMESPACE = "labs-dev"
                     env.NODE_ENV = "dev"
                     env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
@@ -86,6 +88,7 @@ pipeline {
             steps {
                 script {
                     env.MAVEN_VERSION="${BUILD_NUMBER}-${GIT_BRANCH}-SNAPSHOT"
+                    env.MAVEN_DEPLOY_REPO = "labs-snapshots"
                }
             }
         }
@@ -137,13 +140,13 @@ pipeline {
                 // sh "mvn -B dependency-check:check"
 
                 echo '### compiling  ###'
-                sh "mvn -B clean install  -DskipTests=true"
+                sh "mvn -B clean install"
 
                 echo '### testing ###'
                 sh "mvn -B test "
 
                 echo '### sonaring ###'
-                //sh "mvn -B sonar:sonar"
+                sh "mvn -B sonar:sonar"
 
                 echo '### Packaging App for Nexus ###'
                 sh 'mvn -B deploy -DskipTests=true'
@@ -271,7 +274,7 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
 
-                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=labs-snapshots&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
+                curl -v "http://nexus-labs-ci-cd.apps.vcc.emea-1.rht-labs.com/service/siesta/rest/beta/search/assets/download?repository=${MAVEN_DEPLOY_REPO}&maven.groupId=com.vcc.tie.auth&maven.artifactId=authorization-server&maven.baseVersion=${MAVEN_VERSION}&maven.extension=jar" -L -o authorizationapp.jar
                 '''
                 echo '### Create Linux Container Image from package ###'
                 sh  '''

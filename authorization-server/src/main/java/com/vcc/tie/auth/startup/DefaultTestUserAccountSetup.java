@@ -32,7 +32,7 @@ public class DefaultTestUserAccountSetup {
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void createSystemAccounts() {
+    public void createUserAccounts() {
         createTechinicanTetsUser();
         createMarketAdminTestUser();
     }
