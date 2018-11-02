@@ -9,7 +9,7 @@ pipeline {
         // GLobal Vars
         PIPELINES_NAMESPACE = "labs-ci-cd"
         APP_NAME = "authorizationapp"
-        JOB_NAME = "${JOB_NAME}".replace("/", "-")
+        JOB_NAME = "${JOB_NAME}".replace("/", "-").replace("%2F", "-")
         JENKINS_TAG = "${JOB_NAME}.${BUILD_NUMBER}"
 
         GIT_SSL_NO_VERIFY = true
@@ -87,7 +87,7 @@ pipeline {
             }
             steps {
                 script {
-                    env.MAVEN_VERSION="${BUILD_NUMBER}-${GIT_BRANCH}-SNAPSHOT"
+                    env.MAVEN_VERSION="${BUILD_NUMBER}-${GIT_BRANCH}-SNAPSHOT".replace("/", "-")
                     env.MAVEN_DEPLOY_REPO = "labs-snapshots"
                }
             }
@@ -202,7 +202,7 @@ pipeline {
                               error("failed to find an mssql instance in namespace ${env.PIPELINES_NAMESPACE}")
                             }
                         }
-                        env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}"  .replace("/", "_").replace("-","_")
+                        env.LIQUIBASE_TEST_SCHEMA_NAME = "${JOB_NAME}_${BUILD_NUMBER}".replace("-","_")
                     }
                 }
                 sh 'oc exec $MSSQL_POD_NAME "echo" "hello world" -n $PIPELINES_NAMESPACE'
@@ -293,7 +293,7 @@ pipeline {
         stage("java-deploy") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -311,11 +311,11 @@ pipeline {
                     oc rollout latest dc/${APP_NAME}
                 '''
                 echo '### Verify OCP Deployment ###'
-                openshiftVerifyDeployment depCfg: env.APP_NAME, 
-                    namespace: env.PROJECT_NAMESPACE, 
-                    replicaCount: '1', 
-                    verbose: 'false', 
-                    verifyReplicaCount: 'true', 
+                openshiftVerifyDeployment depCfg: env.APP_NAME,
+                    namespace: env.PROJECT_NAMESPACE,
+                    replicaCount: '1',
+                    verbose: 'false',
+                    verifyReplicaCount: 'true',
                     waitTime: '',
                     waitUnit: 'sec'
             }
