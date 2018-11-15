@@ -30,7 +30,7 @@ public class TieClaimsProvider {
     }
 
     public void updateWithEditorPrivilage(String username) {
-        userToPrivileges.put(username, Arrays.asList(new InMemoryPrivilage("SUPPORT_ARTICLE_WRITE")));
+        userToPrivileges.put(username, Arrays.asList(new InMemoryPrivilage("SUPPORT_ARTICLE_READ"), new InMemoryPrivilage("SUPPORT_ARTICLE_WRITE")));
     }
 
     public void updateWithReaderPrivilage(String username) {
