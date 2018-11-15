@@ -28,7 +28,6 @@ public class WebSecurityConfigurerAdapterImpl extends WebSecurityConfigurerAdapt
 
   @Autowired private DataSource dataSource;
 
-  @Autowired private PasswordEncoder passwordEncoder;
 
   @Bean
   public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -38,7 +37,7 @@ public class WebSecurityConfigurerAdapterImpl extends WebSecurityConfigurerAdapt
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.jdbcAuthentication().dataSource(dataSource).passwordEncoder(passwordEncoder);
+    auth.jdbcAuthentication().dataSource(dataSource).passwordEncoder(passwordEncoder());
 
   }
 

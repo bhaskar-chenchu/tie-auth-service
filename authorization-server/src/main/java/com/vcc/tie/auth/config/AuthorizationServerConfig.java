@@ -113,8 +113,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
 
             authorities.addAll(tieClaimsProvider.getUserPrivileges(authentication.getUserAuthentication().getName()));
-            tieClaimsProvider.getUserRoles(authentication.getName()).map(s -> "ROLE_" + s)
-                    .ifPresent(authorities::add);
+
 
             additionalInfo.put("authorities", authorities);
 
