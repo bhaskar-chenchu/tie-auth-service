@@ -32,20 +32,20 @@ public class DefaultTestUserAccountSetup {
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void createSystemAccounts() {
-        createTechinicanTetsUser();
-        createMarketAdminTestUser();
+    public void createUserAccounts() {
+        createUserWithEditorPrivilage();
+        createUserWithReaderPrivilage();
     }
 
-    private void createMarketAdminTestUser() {
+    private void createUserWithEditorPrivilage() {
         UserDetails userDetails = createTestUser("test_market_user");
-        tieClaimsProvider.registerAsMarketAdmin(userDetails.getUsername());
+        tieClaimsProvider.updateWithEditorPrivilage(userDetails.getUsername());
         store(userDetails);
     }
 
-    private void createTechinicanTetsUser() {
+    private void createUserWithReaderPrivilage() {
         UserDetails userDetails = createTestUser("test_user");
-        tieClaimsProvider.registerAsTechnician(userDetails.getUsername());
+        tieClaimsProvider.updateWithReaderPrivilage(userDetails.getUsername());
         store(userDetails);
     }
 
