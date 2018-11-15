@@ -33,18 +33,21 @@ public class DefaultTestUserAccountSetup {
 
     @EventListener(ApplicationReadyEvent.class)
     public void createUserAccounts() {
-        createUserWithEditorPrivilage();
-        createUserWithReaderPrivilage();
+        createUserWithEditorPrivilage("test_user");
+        createUserWithReaderPrivilage("test_market_user");
+
+        createUserWithEditorPrivilage("test_editor");
+        createUserWithReaderPrivilage("test_reader");
     }
 
-    private void createUserWithEditorPrivilage() {
-        UserDetails userDetails = createTestUser("test_market_user");
+    private void createUserWithEditorPrivilage(String username) {
+        UserDetails userDetails = createTestUser(username);
         tieClaimsProvider.updateWithEditorPrivilage(userDetails.getUsername());
         store(userDetails);
     }
 
-    private void createUserWithReaderPrivilage() {
-        UserDetails userDetails = createTestUser("test_user");
+    private void createUserWithReaderPrivilage(String username) {
+        UserDetails userDetails = createTestUser(username);
         tieClaimsProvider.updateWithReaderPrivilage(userDetails.getUsername());
         store(userDetails);
     }
