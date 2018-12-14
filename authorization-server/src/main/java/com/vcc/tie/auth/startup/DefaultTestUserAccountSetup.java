@@ -38,6 +38,15 @@ public class DefaultTestUserAccountSetup {
 
         createUserWithEditorPrivilage("test_editor");
         createUserWithReaderPrivilage("test_reader");
+
+
+        createUserWithEditorPrivilage("TESTTIEA");
+        createUserWithEditorPrivilage("TESTTIEB");
+
+        createUserWithReaderPrivilage("TESTTIEC");
+        createUserWithReaderPrivilage("TESTTIED");
+
+
     }
 
     private void createUserWithEditorPrivilage(String username) {
