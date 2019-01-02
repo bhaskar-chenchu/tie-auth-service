@@ -15,6 +15,21 @@ pipeline {
         GIT_SSL_NO_VERIFY = true
         //GIT_CREDENTIALS = credentials('labs-ci-cd-jenkins-git-password')
         //NEXUS_CREDS = credentials('labs-ci-cd-nexus-password')
+        
+        
+  def server = Artifactory.server "art"
+  def buildInfo = Artifactory.newBuildInfo()
+  buildInfo.env.capture = true
+  def rtMaven = Artifactory.newMavenBuild()
+  rtMaven.tool = MAVEN_TOOL // Tool name from Jenkins configuration
+  rtMaven.opts = "-Denv=dev"
+  rtMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: server
+  rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: server
+        
+  
+    // Publish build info.
+  server.publishBuildInfo buildInfo
+
 
         // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "tie"
