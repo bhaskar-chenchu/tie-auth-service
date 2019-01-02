@@ -54,7 +54,7 @@ pipeline {
                     //env.NODE_ENV = "test"
                     //env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
                  
-                       def server = Artifactory.server 'art-1'
+                       def server = Artifactory.server 'artifactory'
                  def uploadSpec = """{
                     "files": [{
                        "pattern": "path/",
