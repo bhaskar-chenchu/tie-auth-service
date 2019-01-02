@@ -17,19 +17,7 @@ pipeline {
         //NEXUS_CREDS = credentials('labs-ci-cd-nexus-password')
         
         
-  def server = Artifactory.server "art"
-  def buildInfo = Artifactory.newBuildInfo()
-  buildInfo.env.capture = true
-  def rtMaven = Artifactory.newMavenBuild()
-  rtMaven.tool = MAVEN_TOOL // Tool name from Jenkins configuration
-  rtMaven.opts = "-Denv=dev"
-  rtMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: server
-  rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: server
-        
-  
-    // Publish build info.
-  server.publishBuildInfo buildInfo
-
+ 
 
         // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "tie"
@@ -59,12 +47,24 @@ pipeline {
             steps {
                 script {
 
-                    env.MAVEN_VERSION="${BUILD_NUMBER}-RELEASE"
-                    env.MAVEN_DEPLOY_REPO = "labs-releases"
+                  //  env.MAVEN_VERSION="${BUILD_NUMBER}-RELEASE"
+                    //env.MAVEN_DEPLOY_REPO = "labs-releases"
                     // Arbitrary Groovy Script executions can do in script tags
-                    env.PROJECT_NAMESPACE = "labs-test"
-                    env.NODE_ENV = "test"
-                    env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
+                    //env.PROJECT_NAMESPACE = "labs-test"
+                    //env.NODE_ENV = "test"
+                    //env.E2E_TEST_ROUTE = "oc get route/${APP_NAME} --template='{{.spec.host}}' -n ${PROJECT_NAMESPACE}".execute().text.minus("'").minus("'")
+                 
+                       def server = Artifactory.server 'art-1'
+                 def uploadSpec = """{
+                    "files": [{
+                       "pattern": "path/",
+                       "target": "path/"
+                    }]
+                 }"""
+
+                 server.upload(uploadSpec) 
+               
+                    
                 }
             }
         }
